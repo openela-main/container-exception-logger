@@ -1,0 +1,32 @@
+From b7ef8a1407fe86a993b7829ecfc6879a2926c7ab Mon Sep 17 00:00:00 2001
+From: Martin Kutlak <mkutlak@redhat.com>
+Date: Wed, 5 Jun 2019 10:08:14 +0200
+Subject: [PATCH] Use a correct command name in helper
+
+abrt-container-logger was the old name.
+
+Related: rhbz#1698747
+
+(cherry picked from commit 251787f2971ee50211e428dd0bdb37eea8b05a63)
+
+Signed-off-by: Martin Kutlak <mkutlak@redhat.com>
+---
+ src/container-exception-logger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/container-exception-logger.c b/src/container-exception-logger.c
+index 104ef74..b26e4c6 100644
+--- a/src/container-exception-logger.c
++++ b/src/container-exception-logger.c
+@@ -24,7 +24,7 @@
+ int main(int argc, char *argv[])
+ {
+     const char *program_usage_string =
+-        "Usage: abrt-container-logger [--no-tag | --tag STRING | --help]"
++        "Usage: container-exception-logger [--no-tag | --tag STRING | --help]"
+         "\n"
+         "\nThe tool reads from standard input and writes to '"INIT_PROC_STDERR_FD_PATH"'";
+ 
+-- 
+2.21.0
+
