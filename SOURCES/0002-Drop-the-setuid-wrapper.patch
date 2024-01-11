@@ -1,0 +1,76 @@
+From b417cfa480d8ff69f1ab5f7a9b957ab0d266ecfe Mon Sep 17 00:00:00 2001
+From: Martin Kutlak <mkutlak@redhat.com>
+Date: Wed, 29 May 2019 11:32:31 +0200
+Subject: [PATCH] Drop the setuid wrapper
+
+The /proc/1 is owned by the UID running the container process (1xxxxxxxxx) so there is no
+need to use setuid for CEL to write to /proc/1/fd/2.
+
+Reverts:
+https://github.com/abrt/abrt/commit/578317a67c0f30469c28752ea2f40ae87a1a356c
+
+(cherry picked from commit 5caab93decc2e2a3c0abf5dc24bf23482680810e)
+
+Signed-off-by: Martin Kutlak <mkutlak@redhat.com>
+---
+ container-exception-logger.spec  |  2 +-
+ src/container-exception-logger.c | 23 +++--------------------
+ 2 files changed, 4 insertions(+), 21 deletions(-)
+
+diff --git a/container-exception-logger.spec b/container-exception-logger.spec
+index 7828667..3a6f1c8 100644
+--- a/container-exception-logger.spec
++++ b/container-exception-logger.spec
+@@ -35,7 +35,7 @@ mkdir -p %{buildroot}/%{_mandir}/man1
+ cp man/container-exception-logger.1 %{buildroot}/%{_mandir}/man1/container-exception-logger.1
+ 
+ %files
+-%attr(6755, root, root) %{_bindir}/container-exception-logger
++%{_bindir}/container-exception-logger
+ %{_mandir}/man1/container-exception-logger.1.*
+ %license COPYING
+ 
+diff --git a/src/container-exception-logger.c b/src/container-exception-logger.c
+index 104ef74..d588de5 100644
+--- a/src/container-exception-logger.c
++++ b/src/container-exception-logger.c
+@@ -60,25 +60,8 @@ int main(int argc, char *argv[])
+     FILE *f = fopen(INIT_PROC_STDERR_FD_PATH, "w");
+     if (f == NULL)
+     {
+-        perror("Failed to open '"INIT_PROC_STDERR_FD_PATH"' as root");
+-
+-        /* Try to open the 'INIT_PROC_STDERR_FD_PATH' as normal user because of
+-           https://github.com/minishift/minishift/issues/2058
+-        */
+-        if (seteuid(getuid()) == 0)
+-        {
+-            f = fopen(INIT_PROC_STDERR_FD_PATH, "w");
+-            if (f == NULL)
+-            {
+-                perror("Failed to open '"INIT_PROC_STDERR_FD_PATH"' as user");
+-                return 2;
+-            }
+-        }
+-        else
+-        {
+-            perror("Failed to setuid");
+-            return 3;
+-        }
++        perror("Failed to open '"INIT_PROC_STDERR_FD_PATH"'");
++        return 2;
+     }
+ 
+     setvbuf (f, NULL, _IONBF, 0);
+@@ -99,7 +82,7 @@ int main(int argc, char *argv[])
+         {
+             perror("Failed to write to '"INIT_PROC_STDERR_FD_PATH"'");
+             fclose(f);
+-            return 4;
++            return 3;
+         }
+     }
+     fclose(f);
+-- 
+2.21.0
+
